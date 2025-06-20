@@ -16,6 +16,8 @@
     public const string OnBulletDamage = "OnBulletDamage";//子弹造成了伤害
     public const string OnEnemyBorn = "OnEnemyBorn";//敌人出生
     public const string OnEnemyHit = "OnEnemyHit";//敌人被击中
+    public const string OnEnemyDeath = "OnEnemyDeath";//敌人死亡
+    public const string OnEnemyMove = "OnEnemyMove";//敌人移动
 
     public const string OnBattleReady = "OnBattleReady";//战斗准备就绪
 }

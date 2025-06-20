@@ -44,8 +44,6 @@ public partial class UIBattle : _UIBase
             if (Input.GetMouseButtonDown(0))
             {
                 originalPoint = Input.mousePosition;
-                if (originalPoint.y > Screen.height / 2)
-                    return;
                 shower.transform.position = originalPoint;
                 shower.gameObject.SetActive(true);
             }
