@@ -12,7 +12,7 @@ internal class GameBullets : Entity
     {
         base.OnStart();
         RegisterCall<float>(Events.Update, OnUpdate);
-        RegisterCall<Transform>(Events.OnPlayerShoot, OnPlayerShoot);
+        RegisterCall<(Vector3 rot, Vector3 pos)>(Events.OnPlayerShoot, OnPlayerShoot);
         RegisterCall<int>(Events.OnBulletDamage, OnBulletDamage);
     }
 
@@ -23,10 +23,10 @@ internal class GameBullets : Entity
         dBullets[uid].isActive = false;
     }
 
-    private async void OnPlayerShoot(Transform player)
+    private async void OnPlayerShoot((Vector3 rot, Vector3 pos) player)
     {
-        var dir = player.eulerAngles;
-        var pos = player.position;
+        var dir = player.rot;
+        var pos = player.pos;
         var conf = Config_Bullet.Bullet.data.bullet[1];
         var bullet = await this.AddChild<EBullet>(conf.Prefab);
         bullet.OnSet(conf, pos, dir);

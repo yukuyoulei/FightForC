@@ -20,9 +20,37 @@ internal class GamePlayer : Entity
         RegisterCall<float>(Events.Update, OnUpdate);
         RegisterCall(Events.Stop, OnStop);
 
+        RegisterCall<int>(Events.OnEnemyDeath, OnEnemyDeath);
+        RegisterCall<(Vector3 enemyPos, int uid)>(Events.OnEnemyMove, OnEnemyMove);
+
         FastCall(Events.OnPlayerMove, player.position);
     }
 
+    Vector3 nearestEnemyPos;
+    int? nearestEnemyID;
+    float nearestSub;
+    private void OnEnemyDeath(int uid)
+    {
+        if (nearestEnemyID.HasValue && nearestEnemyID.Value == uid)
+        {
+            nearestEnemyID = null;
+        }
+    }
+    private void OnEnemyMove((Vector3 enemyPos, int uid) tuple)
+    {
+        var sub = Vector3.Distance(tuple.enemyPos, player.position);
+        if (!nearestEnemyID.HasValue || sub < nearestSub)
+        {
+            nearestEnemyID = tuple.uid;
+            nearestSub = sub;
+            nearestEnemyPos = tuple.enemyPos;
+        }
+        else if (nearestEnemyID.HasValue && nearestEnemyID.Value == tuple.uid)
+        {
+            nearestEnemyPos = tuple.enemyPos;
+            nearestSub = sub;
+        }
+    }
     const float CD = 0.2f; // 射击冷却时间
     float cd = CD;
     private void OnUpdate(float deltaSec)
@@ -31,8 +59,22 @@ internal class GamePlayer : Entity
         if (cd <= 0)
         {
             cd = CD;
+            if (!nearestEnemyID.HasValue)
+                return;
             animator.SetTrigger("Shot");
-            FastCall(Events.OnPlayerShoot, player);
+
+            // 计算朝向最近敌人
+            Vector3 dir = nearestEnemyPos - player.position;
+            if (dir.sqrMagnitude > 0.0001f)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
+                player.rotation = lookRotation; // 让角色朝向最近敌人
+                FastCall(Events.OnPlayerShoot, (lookRotation.eulerAngles, player.position));
+            }
+            else
+            {
+                FastCall(Events.OnPlayerShoot, (player.eulerAngles, player.position));
+            }
         }
     }
 
@@ -54,15 +96,9 @@ internal class GamePlayer : Entity
             animator.SetTrigger("Run");
         }
 
-        var dir = Quaternion.Euler(direction);
-        player.localRotation = Quaternion.Lerp(player.localRotation, dir, Time.deltaTime * 10f);
-
-        float speed = SPEED;
-        // 只有当旋转接近目标角度时才允许移动
-        if (Quaternion.Angle(player.localRotation, dir) > 10f)
-            speed = speed / 3 * 2;
-
-        player.localPosition += player.forward * Time.deltaTime * speed;
+        // 计算旋转对应的前进方向
+        var moveDir = Quaternion.Euler(direction) * Vector3.forward;
+        player.localPosition += moveDir.normalized * Time.deltaTime * SPEED;
         FastCall(Events.OnPlayerMove, player.position);
     }
 }

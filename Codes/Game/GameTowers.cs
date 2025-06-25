@@ -27,17 +27,9 @@ internal class GameTowers : Entity
         {
             base.OnStart();
             transform = this.GetTransform();
-            RegisterCall<(Vector3 enemyPos, int uid)>(Events.OnEnemyMove, OnEnemyMove);
             RegisterCall<float>(Events.Update, OnUpdate);
             RegisterCall<int>(Events.OnEnemyDeath, OnEnemyDeath);
-        }
-
-        private void OnEnemyDeath(int uid)
-        {
-            if (nearestEnemyID.HasValue && nearestEnemyID.Value == uid)
-            {
-                nearestEnemyID = null;
-            }
+            RegisterCall<(Vector3 enemyPos, int uid)>(Events.OnEnemyMove, OnEnemyMove);
         }
 
         const float CD = 0.2f; // 射击冷却时间
@@ -62,7 +54,7 @@ internal class GameTowers : Entity
                 if (cd <= 0)
                 {
                     cd = CD;
-                    FastCall(Events.OnPlayerShoot, transform);
+                    FastCall(Events.OnPlayerShoot, (transform.eulerAngles, transform.position));
                 }
             }
         }
@@ -70,6 +62,13 @@ internal class GameTowers : Entity
         Vector3 nearestEnemyPos;
         int? nearestEnemyID;
         float nearestSub;
+        private void OnEnemyDeath(int uid)
+        {
+            if (nearestEnemyID.HasValue && nearestEnemyID.Value == uid)
+            {
+                nearestEnemyID = null;
+            }
+        }
         private void OnEnemyMove((Vector3 enemyPos, int uid) tuple)
         {
             var sub = Vector3.Distance(tuple.enemyPos, transform.position);
