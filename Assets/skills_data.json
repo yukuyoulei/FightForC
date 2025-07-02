@@ -1,0 +1,21 @@
+{
+    "skills": [
+        {
+            "skillName": "1",
+            "skillBlocks": [
+                {
+                    "triggerMilliseconds": 1,
+                    "effectType": 0,
+                    "effectValue": 0.0,
+                    "effectString": ""
+                },
+                {
+                    "triggerMilliseconds": 0,
+                    "effectType": 1,
+                    "effectValue": 0.0,
+                    "effectString": ""
+                }
+            ]
+        }
+    ]
+}
