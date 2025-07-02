@@ -129,6 +129,11 @@ public class SkillEditor : EditorWindow
         {
             SaveSkills();
         }
+
+        if (GUILayout.Button("Export Skills to Code"))
+        {
+            ExportSkillsToCode();
+        }
     }
 
     private void SaveSkills()
@@ -142,6 +147,59 @@ public class SkillEditor : EditorWindow
         catch (Exception e)
         {
             Debug.LogError($"Failed to save skills: {e.Message}");
+        }
+    }
+
+    private void ExportSkillsToCode()
+    {
+        string exportPath = Path.Combine(Application.dataPath, "BaseScripts/ConfigSkill/Config_Skills.cs");
+        try
+        {
+            using (StreamWriter writer = new StreamWriter(exportPath))
+            {
+                writer.WriteLine("// Auto-generated skill configuration file");
+                writer.WriteLine("using System.Collections.Generic;");
+                writer.WriteLine();
+                writer.WriteLine("public static class Config_Skills");
+                writer.WriteLine("{");
+                writer.WriteLine("    public static List<Skill> Skills = new List<Skill>");
+                writer.WriteLine("    {");
+
+                for (int i = 0; i < skills.Count; i++)
+                {
+                    Skill skill = skills[i];
+                    writer.WriteLine("        new Skill");
+                    writer.WriteLine("        {");
+                    writer.WriteLine($"            skillName = \"{skill.skillName}\",");
+                    writer.WriteLine("            skillBlocks = new List<SkillBlock>");
+                    writer.WriteLine("            {");
+
+                    for (int j = 0; j < skill.skillBlocks.Count; j++)
+                    {
+                        SkillBlock block = skill.skillBlocks[j];
+                        writer.WriteLine("                new SkillBlock");
+                        writer.WriteLine("                {");
+                        writer.WriteLine($"                    triggerMilliseconds = {block.triggerMilliseconds},");
+                        writer.WriteLine($"                    effectType = EffectType.{block.effectType},");
+                        writer.WriteLine($"                    effectValue = {block.effectValue}f,");
+                        writer.WriteLine($"                    effectString = \"{block.effectString};\"");
+                        writer.WriteLine("                },");
+                    }
+
+                    writer.WriteLine("            }");
+                    writer.WriteLine("        },");
+                }
+
+                writer.WriteLine("    };");
+                writer.WriteLine("}");
+            }
+
+            AssetDatabase.Refresh();
+            Debug.Log("Skills exported to Config_Skills.cs successfully!");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to export skills to code: {e.Message}");
         }
     }
 

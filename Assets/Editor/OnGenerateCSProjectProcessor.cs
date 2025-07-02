@@ -20,8 +20,8 @@ public class OnGenerateCSProjectProcessor : AssetPostprocessor
         {
             if (path.EndsWith($"{dll}.csproj"))
             {
-                content = content.Replace($"<Compile Include=\"Assets\\Hotfix{dll}\\Empty.cs\" />", string.Empty);
-                content = content.Replace($"<None Include=\"Assets\\Hotfix{dll}\\{dll}.asmdef\" />", string.Empty);
+                content = content.Replace($"<Compile Include=\"Assets\\BaseScripts\\{dll}\\Empty.cs\" />", string.Empty);
+                content = content.Replace($"<None Include=\"Assets\\BaseScripts\\{dll}\\{dll}.asmdef\" />", string.Empty);
                 return GenerateCustomProject(path, content, $@"{dll}\**\*.cs", false, false);
             }
         }

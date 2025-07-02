@@ -24,6 +24,8 @@ public static class StartUp
         CodeLoader.ApplicationQuitAction = ApplicationQuit;
         CodeLoader.ApplicationPauseAction = ApplicationPause;
         CodeLoader.ApplicationFocusAction = ApplicationFocus;
+
+        Log.Debug($"Loaded skill count: {Config_Skills.Skills.Count}");
     }
 
     private static void ApplicationFocus(bool focus)
