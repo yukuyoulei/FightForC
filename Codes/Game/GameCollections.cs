@@ -92,6 +92,7 @@ internal class GameCollections : Entity
                 poses.Add(collection.transform.position);
                 flying.Add(collection.transform);
                 CoinHelper.Count++;
+                FastCall(Events.OnPlayerCoinUpdate, CoinHelper.Count);
                 removeCollections.Add(collection);
             }
         }

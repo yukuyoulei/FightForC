@@ -20,4 +20,6 @@
     public const string OnEnemyMove = "OnEnemyMove";//敌人移动
 
     public const string OnBattleReady = "OnBattleReady";//战斗准备就绪
+
+    public const string OnPlayerCoinUpdate = "OnPlayerCoinUpdate";//玩家金币数量刷新
 }

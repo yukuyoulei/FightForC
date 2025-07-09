@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UIBattle : _UIBase
@@ -8,12 +9,24 @@ public partial class UIBattle : _UIBase
     {
         base.OnStart();
 
-        wjoystick = this.AddChild<EJoystick>(this.GetMonoComponent<Transform>("wjoystick"));
+        wjoystick = this.AddChild<EJoystick>(this.GetMonoComponent<Transform>("joystick"));
 
         btnQuit.onClick.AddListener(OnQuitClick);
 
         RegisterCall(Events.Update, OnUpdate);
+        RegisterCall<int>(Events.OnPlayerCoinUpdate, OnPlayerLostCoin);
     }
+    public override void OnShow()
+    {
+        base.OnShow();
+        textCoin.text = "0";
+    }
+
+    private void OnPlayerLostCoin(int coin)
+    {
+        textCoin.text = coin.ToString();
+    }
+
     private void OnUpdate()
     {
         wjoystick.OnUpdate();

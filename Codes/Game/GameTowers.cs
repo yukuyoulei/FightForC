@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConfigAuto;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -15,7 +16,9 @@ internal class GameTowers : Entity
     Dictionary<int, ETower> dTowers = new();
     private async void OnBuildTower(Transform target)
     {
-        var tower = await this.AddChild<ETower>("Prefab/Weapon Hammer");
+        var conf = Config_Tower.Tower.data.towers[0];
+        var tower = await this.AddChild<ETower>(conf.Prefab);
+        tower.OnSet(conf);
         Transform towerTr = tower.GetTransform();
         towerTr.position = target.position;
         dTowers[towerTr.GetInstanceID()] = tower;
@@ -32,13 +35,16 @@ internal class GameTowers : Entity
             RegisterCall<(Vector3 enemyPos, int uid)>(Events.OnEnemyMove, OnEnemyMove);
         }
 
-        const float CD = 0.2f; // 射击冷却时间
-        float cd = CD;
-        const float RotateSpeed = 60f; // 每秒旋转速度
+        float cd;
         private void OnUpdate(float deltaSec)
         {
             if (!nearestEnemyID.HasValue)
                 return;
+            if (Vector3.Distance(nearestEnemyPos, transform.position) > conf.shootRadius)
+            {
+                // 如果敌人距离过远，则不射击
+                return;
+            }
             //如果transform的朝向和nearestEnemyPos相差超过5度，则先旋转，否则 FastCall(Events.OnPlayerShoot, transform);
             var dir = nearestEnemyPos - transform.position;
             dir.y = 0; // 保持水平面
@@ -46,14 +52,14 @@ internal class GameTowers : Entity
             if (angle > 1f)
             {
                 var targetRotation = Quaternion.LookRotation(dir);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, RotateSpeed * deltaSec);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, conf.rotateSpeed * deltaSec);
             }
             else
             {
                 cd -= deltaSec;
                 if (cd <= 0)
                 {
-                    cd = CD;
+                    cd = conf.shootCD;
                     FastCall(Events.OnPlayerShoot, (transform.eulerAngles, transform.position));
                 }
             }
@@ -84,6 +90,11 @@ internal class GameTowers : Entity
                 nearestSub = sub;
             }
         }
-
+        public Config_Tower.towers conf { get; private set; }
+        internal void OnSet(Config_Tower.towers conf)
+        {
+            this.conf = conf;
+            cd = conf.shootCD;
+        }
     }
 }

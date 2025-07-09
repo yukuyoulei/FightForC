@@ -49,6 +49,7 @@ internal class GameTowerSlot : Entity
         if (!dCosts.ContainsKey(reachedTowerSlot.GetInstanceID())) return;
         if (dCosts[reachedTowerSlot.GetInstanceID()] == 0) return;
         CoinHelper.Count--;
+        FastCall(Events.OnPlayerCoinUpdate, CoinHelper.Count);
         dCosts[reachedTowerSlot.GetInstanceID()]--;
         var coin = carry.GetChild(carry.childCount - 1);
         coin.SetParent(reachedTowerSlot, true);
@@ -100,5 +101,15 @@ internal class GameTowerSlot : Entity
         }
         if (reachedTowerSlot == null)
             reachTime = null;
+    }
+    class ETowerSlot : Entity
+    {
+        Transform transform;
+        public override void OnStart()
+        {
+            base.OnStart();
+            transform = this.GetTransform();
+        }
+
     }
 }

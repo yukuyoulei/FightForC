@@ -1,4 +1,5 @@
 ﻿using CloverExternal;
+using ConfigAuto;
 using System;
 using UnityEngine;
 
@@ -20,7 +21,7 @@ internal class GamePlayer : Entity
         RegisterCall<float>(Events.Update, OnUpdate);
         RegisterCall(Events.Stop, OnStop);
 
-        RegisterCall<(int uid,Vector3 pos)>(Events.OnEnemyDeath, OnEnemyDeath);
+        RegisterCall<(int uid, Vector3 pos)>(Events.OnEnemyDeath, OnEnemyDeath);
         RegisterCall<(Vector3 enemyPos, int uid)>(Events.OnEnemyMove, OnEnemyMove);
 
         FastCall(Events.OnPlayerMove, player.position);
@@ -61,7 +62,20 @@ internal class GamePlayer : Entity
             cd = CD;
             if (!nearestEnemyID.HasValue)
                 return;
-            animator.SetTrigger("Shot");
+            if (Vector3.Distance(nearestEnemyPos, player.position) > Config_Player.Player.data.shootRadius)
+            {
+                if (lastAnim == "Shot")
+                {
+                    if (this.direction.HasValue)
+                    {
+                        PlayAnim("Run");
+                        return;
+                    }
+                    PlayAnim("Idle");
+                }
+                return;
+            }
+            PlayAnim("Shot");
 
             // 计算朝向最近敌人
             Vector3 dir = nearestEnemyPos - player.position;
@@ -77,13 +91,13 @@ internal class GamePlayer : Entity
             }
         }
     }
-
+    string lastAnim = "Idle";
     private void OnStop()
     {
-        if (!this.direction.HasValue)
+        if (!direction.HasValue)
             return;
         this.direction = null;
-        animator.SetTrigger("Idle");
+        PlayAnim("Idle");
     }
 
     Vector3? direction;
@@ -91,14 +105,28 @@ internal class GamePlayer : Entity
     private void OnMove(Vector3 direction)
     {
         if (!this.direction.HasValue)
-        {
-            this.direction = direction;
-            animator.SetTrigger("Run");
-        }
+            PlayAnim("Run");
+        this.direction = direction;
 
         // 计算旋转对应的前进方向
         var moveDir = Quaternion.Euler(direction) * Vector3.forward;
         player.localPosition += moveDir.normalized * Time.deltaTime * SPEED;
         FastCall(Events.OnPlayerMove, player.position);
+
+        if (Vector3.Distance(nearestEnemyPos, player.position) > Config_Player.Player.data.shootRadius)
+        {
+            if (moveDir.sqrMagnitude > 0.0001f)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(moveDir.normalized, Vector3.up);
+                player.rotation = lookRotation;
+            }
+        }
+    }
+    private void PlayAnim(string anim)
+    {
+        if (lastAnim == anim)
+            return;
+        lastAnim = anim;
+        animator.SetTrigger(anim);
     }
 }

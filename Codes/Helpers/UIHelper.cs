@@ -10,6 +10,7 @@ internal static class UIHelper
     {
         var t = typeof(T);
         var ui = await parent.AddChild<T>($"UI/{t.Name}");
+        ui.OnShow();
         return ui;
     }
 }
