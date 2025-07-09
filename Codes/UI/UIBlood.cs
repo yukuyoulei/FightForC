@@ -12,6 +12,8 @@ public partial class UIBlood : _UIBase
         RegisterCall(Events.Update, OnUpdate);
         RegisterCall<(Transform transform, int hp)>(Events.OnEnemyBorn, OnEnemyBorn);
         RegisterCall<(int instanceId, int curHp)>(Events.OnEnemyHit, OnEnemyHit);
+
+        this.GetTransform().GetComponentInParent<Canvas>().worldCamera = Camera.main;
     }
 
     private void OnEnemyHit((int instanceId, int curHp) a)
@@ -33,7 +35,12 @@ public partial class UIBlood : _UIBase
                 kv.Value.isActive = false;
                 continue;
             }
-            kv.Value.GetTransform().position = Camera.main.WorldToScreenPoint(kv.Value.anchor.position) + Vector3.up * 100;
+            //overlay
+            //kv.Value.GetTransform().position = Camera.main.WorldToScreenPoint(kv.Value.anchor.position) + Vector3.up * 100;
+            var transform = kv.Value.GetTransform();
+            transform.position = kv.Value.anchor.position + Vector3.up * 8;
+            transform.LookAt(Camera.main.transform);
+            transform.localEulerAngles = new Vector3(-transform.localEulerAngles.x, 0, 0);
         }
     }
 
@@ -42,6 +49,7 @@ public partial class UIBlood : _UIBase
     {
         var cell = GameObject.Instantiate(this.bloodCell.gameObject).transform;
         cell.gameObject.SetActive(true);
+        cell.localScale = Vector3.one * 0.1f;
         var ecell = this.AddChild<EBloodCell>(cell);
         dBlood[arg.transform.GetInstanceID()] = ecell;
         ecell.OnSetBlood(arg.hp, arg.transform);

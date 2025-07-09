@@ -15,6 +15,8 @@ public partial class UICosts : _UIBase
         RegisterCall<(Transform transform, int cost)>(Events.OnTowerSlotShow, OnTargetShow);
         RegisterCall(Events.Update, OnUpdate);
         RegisterCall<int>(Events.OnTowerSlotGetCoin, OnTargetGetCoin);
+  
+        this.GetTransform().GetComponentInParent<Canvas>().worldCamera = Camera.main;
     }
 
     private void OnTargetGetCoin(int targetId)
@@ -34,7 +36,12 @@ public partial class UICosts : _UIBase
     {
         foreach (var kv in dCosts)
         {
-            kv.Value.GetTransform().position = Camera.main.WorldToScreenPoint(kv.Value.anchor.position) + Vector3.up * 100;
+            //overlay
+            //kv.Value.GetTransform().position = Camera.main.WorldToScreenPoint(kv.Value.anchor.position) + Vector3.up * 100;
+            var transform = kv.Value.GetTransform();
+            transform.position = kv.Value.anchor.position + Vector3.up * 5;
+            transform.LookAt(Camera.main.transform);
+            transform.localEulerAngles = new Vector3(-transform.localEulerAngles.x, 0, 0);
         }
     }
 
@@ -43,6 +50,7 @@ public partial class UICosts : _UIBase
     {
         var cell = GameObject.Instantiate(this.costCell.gameObject).transform;
         cell.gameObject.SetActive(true);
+        cell.localScale = Vector3.one * 0.05f;
         var ecell = this.AddChild<ECostCell>(cell);
         dCosts[arg.transform.GetInstanceID()] = ecell;
         ecell.OnSetCost(arg.cost, arg.transform);
@@ -65,6 +73,7 @@ public partial class UICosts : _UIBase
         public override void OnStart()
         {
             textCost = this.GetMonoComponent<Text>("textCost");
+            isActive = true;
         }
         int cost;
         public void OnSetCost(int cost, Transform anchor)
@@ -77,6 +86,8 @@ public partial class UICosts : _UIBase
         {
             cost--;
             textCost.text = cost.ToString();
+            if (cost > 0)
+                return;
             isActive = false;
         }
     }
