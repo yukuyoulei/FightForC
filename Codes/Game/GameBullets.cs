@@ -1,9 +1,6 @@
 ﻿using ConfigAuto;
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
 
 internal class GameBullets : Entity
 {

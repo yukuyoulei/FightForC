@@ -20,7 +20,7 @@ internal class GamePlayer : Entity
         RegisterCall<float>(Events.Update, OnUpdate);
         RegisterCall(Events.Stop, OnStop);
 
-        RegisterCall<int>(Events.OnEnemyDeath, OnEnemyDeath);
+        RegisterCall<(int uid,Vector3 pos)>(Events.OnEnemyDeath, OnEnemyDeath);
         RegisterCall<(Vector3 enemyPos, int uid)>(Events.OnEnemyMove, OnEnemyMove);
 
         FastCall(Events.OnPlayerMove, player.position);
@@ -29,9 +29,9 @@ internal class GamePlayer : Entity
     Vector3 nearestEnemyPos;
     int? nearestEnemyID;
     float nearestSub;
-    private void OnEnemyDeath(int uid)
+    private void OnEnemyDeath((int uid, Vector3 pos) a)
     {
-        if (nearestEnemyID.HasValue && nearestEnemyID.Value == uid)
+        if (nearestEnemyID.HasValue && nearestEnemyID.Value == a.uid)
         {
             nearestEnemyID = null;
         }

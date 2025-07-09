@@ -1,11 +1,9 @@
-﻿using CloverExternal;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 internal class GameCollections : Entity
 {
-    List<Transform> lCollections = new();
+    List<ECoin> lCollections = new();
     List<Transform> flying = new();
     List<Vector3> poses = new();
     Transform carry;
@@ -19,12 +17,20 @@ internal class GameCollections : Entity
         for (var i = 0; i < collections.childCount; i++)
         {
             var tr = collections.GetChild(i);
-            lCollections.Add(tr);
+            lCollections.Add(this.AddChild<ECoin>(tr));
         }
 
         RegisterCall<Vector3>(Events.OnPlayerMove, OnPlayerMove);
         RegisterCall<float>(Events.Update, OnUpdate);
         RegisterCall<Transform>(Events.FlyCoinReuse, FlyCoinReuse);
+        RegisterCall<(int uid, Vector3 pos)>(Events.OnEnemyDeath, OnEnemyDeath);
+    }
+
+    private async void OnEnemyDeath((int uid, Vector3 pos) a)
+    {
+        var coin = await this.AddChild<ECoin>("Prefab/Coin Gold");
+        coin.transform.position = a.pos;
+        lCollections.Add(coin);
     }
 
     private void FlyCoinReuse(Transform transform)
@@ -35,7 +41,7 @@ internal class GameCollections : Entity
         transform.localEulerAngles = Vector3.zero;
         poses.RemoveAt(0);
         poses.Add(p);
-        lCollections.Add(transform);
+        lCollections.Add(this.AddChild<ECoin>(transform));
     }
 
     List<Transform> removeFlying = new();
@@ -69,7 +75,7 @@ internal class GameCollections : Entity
         removeFlying.Clear();
     }
     private Vector3? playerPos;
-    List<Transform> removeCollections = new();
+    List<ECoin> removeCollections = new();
     private void OnPlayerMove(Vector3 vector)
     {
         playerPos = vector;
@@ -80,11 +86,11 @@ internal class GameCollections : Entity
                 continue;
             if (!collection.gameObject.activeInHierarchy)
                 continue;
-            var pos = collection.position;
+            var pos = collection.transform.position;
             if (Vector3.Distance(vector, pos) < 10)
             {
-                poses.Add(collection.position);
-                flying.Add(collection);
+                poses.Add(collection.transform.position);
+                flying.Add(collection.transform);
                 CoinHelper.Count++;
                 removeCollections.Add(collection);
             }
@@ -92,5 +98,20 @@ internal class GameCollections : Entity
         foreach (var r in removeCollections)
             lCollections.Remove(r);
         removeCollections.Clear();
+    }
+    class ECoin : Entity
+    {
+        public GameObject gameObject { get; private set; }
+        public Transform transform { get; private set; }
+        public override void OnStart()
+        {
+            base.OnStart();
+            transform = this.GetTransform();
+            gameObject = transform.gameObject;
+            RegisterCall<float>(Events.Update, OnUpdate);
+        }
+        private void OnUpdate(float deltaSec)
+        {
+        }
     }
 }

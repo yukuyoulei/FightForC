@@ -95,7 +95,7 @@ internal class GameEnemies : Entity
             RegisterCall<(int uid, int damage, Vector3 pos)>(Events.OnBulletMove, OnBulletMove);
         }
 
-        private async void OnBulletMove((int uid, int damage, Vector3 pos) a)
+        private void OnBulletMove((int uid, int damage, Vector3 pos) a)
         {
             if (Vector3.Distance(a.pos, transform.position) > conf.size)
                 return;
@@ -104,7 +104,7 @@ internal class GameEnemies : Entity
             FastCall(Events.OnEnemyHit, (transform.GetInstanceID(), gameNumerics.curhp));
             if (gameNumerics.curhp <= 0)
             {
-                FastCall(Events.OnEnemyDeath, uid);
+                FastCall(Events.OnEnemyDeath, (uid, transform.position));
                 UnregisterCall(Events.OnBulletMove);
                 this.isActive = false;
             }
