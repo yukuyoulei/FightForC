@@ -77,18 +77,5 @@ public partial class UIBattle : _UIBase
             float angle = Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg;
             FastCall(Events.Move, new Vector3(0, angle));
         }
-        private Vector3 tvector = new Vector3();
-        /// <summary>
-        /// 屏幕左边和世界坐标，需要交换yz
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        Vector3 exchangeYZ(Vector3 v)
-        {
-            tvector.x = v.x;
-            tvector.z = v.y;
-            tvector.y = v.z;
-            return tvector;
-        }
     }
 }
