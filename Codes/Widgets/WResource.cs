@@ -15,7 +15,7 @@ internal class WResource : Entity
         {
             resource = GameObject.Instantiate(await ResourceHelper.Load<GameObject>(resourceName));
             resource.transform.localScale = Vector3.one;
-            return parent.AddChild<T>(this);
+            return Parent.AddChild<T>(this);
         }
         catch (System.Exception e)
         {
@@ -26,7 +26,7 @@ internal class WResource : Entity
     public T AttachResource<T>(GameObject obj) where T : Entity, new()
     {
         resource = obj;
-        return parent.AddChild<T>(this);
+        return Parent.AddChild<T>(this);
     }
     public override void OnDestroy()
     {

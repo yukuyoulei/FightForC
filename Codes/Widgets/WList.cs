@@ -24,7 +24,7 @@ internal class WList<T> : Entity where T : Entity, new()
         for (int i = 0; i < count; i++)
         {
             var c = this.AddChild<T>(resource.GetChild(i));
-            c.parent = this;
+            c.Parent = this;
             init?.Invoke(i, c);
         }
     }

@@ -1,13 +1,16 @@
 ﻿using ConfigAuto;
 using System.Collections.Generic;
 using UnityEngine;
+using static ConfigAuto.Config_Bullet;
 
 internal class GameBullets : Entity
 {
-    Dictionary<int, EBullet> dBullets = new();
+    List<int> bullets;
     public override void OnStart()
     {
         base.OnStart();
+        bullets = GetCluster("Bullet");
+
         RegisterCall<float>(Events.Update, OnUpdate);
         RegisterCall<(Vector3 rot, Vector3 pos)>(Events.OnPlayerShoot, OnPlayerShoot);
         RegisterCall<int>(Events.OnBulletDamage, OnBulletDamage);
@@ -15,9 +18,10 @@ internal class GameBullets : Entity
 
     private void OnBulletDamage(int uid)
     {
-        if (!dBullets.ContainsKey(uid))
+        if (!bullets.Contains(uid))
             return;
-        dBullets[uid].isActive = false;
+        var ent = GetChild(uid); 
+        ent.isActive = false;
     }
 
     private async void OnPlayerShoot((Vector3 rot, Vector3 pos) player)
@@ -26,15 +30,16 @@ internal class GameBullets : Entity
         var pos = player.pos;
         var conf = Config_Bullet.Bullet.data.bullet[1];
         var bullet = await this.AddChild<EBullet>(conf.Prefab);
+        bullet.JoinCluster("Bullet");
         bullet.OnSet(conf, pos, dir);
-        dBullets[bullet.uid] = bullet;
     }
 
     List<EBullet> remove = new();
     private void OnUpdate(float deltaSec)
     {
-        foreach (var bullet in dBullets.Values)
+        foreach (var id in bullets)
         {
+            var bullet = GetChild(id) as EBullet;
             if (bullet.isActive)
                 bullet.OnUpdate(deltaSec);
             else
@@ -42,7 +47,6 @@ internal class GameBullets : Entity
         }
         foreach (var bullet in remove)
         {
-            dBullets.Remove(bullet.uid);
             RemoveChild(bullet);
         }
     }

@@ -2,6 +2,6 @@
 {
     public void CloseMe()
     {
-        parent.RemoveChild(this);
+        Parent.RemoveChild(this);
     }
 }
