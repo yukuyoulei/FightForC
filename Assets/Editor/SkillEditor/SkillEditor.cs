@@ -13,41 +13,6 @@ using static Unity.Collections.AllocatorManager;
 
 public class SkillEditor : EditorWindow
 {
-    [System.Serializable]
-    public class Skill
-    {
-        /// <summary>
-        /// 技能名称
-        /// </summary>
-        public string skillName;
-        /// <summary>
-        /// CD时间
-        /// </summary>
-        public float cd;
-        /// <summary>
-        /// 技能释放半径
-        /// </summary>
-        public float radius;
-        public List<SkillBlock> skillBlocks = new List<SkillBlock>();
-    }
-
-    [System.Serializable]
-    public class SkillBlock
-    {
-        public int triggerMilliseconds;
-        public EffectType effectType;
-        public float effectValue;
-        public string effectString;
-    }
-
-    public enum EffectType
-    {
-        Damage,
-        Heal,
-        Buff,
-        Debuff
-    }
-
     private List<Skill> skills = new List<Skill>();
     private int selectedSkillIndex = -1;
     private string newSkillName = "";
@@ -76,12 +41,40 @@ public class SkillEditor : EditorWindow
             {
                 GUILayout.BeginHorizontal();
 
-                if (GUILayout.Button(skills[i].skillName, GUILayout.Width(200)))
+                if (GUILayout.Button(skills[i].skillName, GUILayout.Width(150)))
                 {
                     selectedSkillIndex = i;
                 }
 
-                if (GUILayout.Button("Delete", GUILayout.Width(70)))
+                // 上移按钮
+                if (i > 0)
+                {
+                    if (GUILayout.Button("↑", GUILayout.Width(25)))
+                    {
+                        SwapSkills(i, i - 1);
+                        break;
+                    }
+                }
+                else
+                {
+                    GUILayout.Space(29);
+                }
+
+                // 下移按钮
+                if (i < skills.Count - 1)
+                {
+                    if (GUILayout.Button("↓", GUILayout.Width(25)))
+                    {
+                        SwapSkills(i, i + 1);
+                        break;
+                    }
+                }
+                else
+                {
+                    GUILayout.Space(29);
+                }
+
+                if (GUILayout.Button("Delete", GUILayout.Width(60)))
                 {
                     if (EditorUtility.DisplayDialog("Delete Skill", $"Are you sure you want to delete the skill '{skills[i].skillName}'?", "Yes", "No"))
                     {
@@ -137,6 +130,21 @@ public class SkillEditor : EditorWindow
         GUILayout.Label("Skill Properties", EditorStyles.boldLabel);
         RenderObjectFields(skills[selectedSkillIndex]);
         GUILayout.EndVertical();
+    }
+
+    /// <summary>
+    /// 交换两个技能的位置
+    /// </summary>
+    /// <param name="index1">第一个技能索引</param>
+    /// <param name="index2">第二个技能索引</param>
+    private void SwapSkills(int index1, int index2)
+    {
+        if (index1 >= 0 && index1 < skills.Count && index2 >= 0 && index2 < skills.Count)
+        {
+            Skill temp = skills[index1];
+            skills[index1] = skills[index2];
+            skills[index2] = temp;
+        }
     }
 
     private void SaveSkills()
@@ -319,7 +327,36 @@ public class SkillEditor : EditorWindow
                     for (int i = 0; i < list.Count; i++)
                     {
                         GUILayout.BeginVertical("box");
-                        GUILayout.Label($"Element {i + 1}");
+                        
+                        // 添加移动按钮行
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label($"Element {i + 1}", EditorStyles.boldLabel);
+                        
+                        // 上移按钮
+                        if (i > 0)
+                        {
+                            if (GUILayout.Button("↑", GUILayout.Width(20)))
+                            {
+                                object temp = list[i];
+                                list[i] = list[i - 1];
+                                list[i - 1] = temp;
+                                // 注意：这里不break，因为我们需要继续渲染
+                            }
+                        }
+                        
+                        // 下移按钮
+                        if (i < list.Count - 1)
+                        {
+                            if (GUILayout.Button("↓", GUILayout.Width(20)))
+                            {
+                                object temp = list[i];
+                                list[i] = list[i + 1];
+                                list[i + 1] = temp;
+                                // 注意：这里不break，因为我们需要继续渲染
+                            }
+                        }
+                        
+                        GUILayout.EndHorizontal();
                         
                         object element = list[i];
                         if (element != null && !elementType.IsPrimitive && elementType != typeof(string) && !elementType.IsEnum)
